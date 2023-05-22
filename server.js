@@ -36,22 +36,23 @@ app.post("/products", async (req, res) => {
         });
         const productData = await newProduct.save();
 
-        res.send({productData});
+        return res.send({productData});
     } catch (error) {
-        res.status(500).send({message: error.message});
+        return res.status(500).send({message: error.message});
     }
 });
 
 // Read
 app.get('/products', async (req, res) => {
     try {
-        const products = await product.find();
+        const price = req.query.price;
+        const products = await product.find({price: {$gt: price}});
         if(products)
-            res.send(products);
+            return res.send(products);
         else
-            res.status(500).send({message: "Products not found"});
+            return res.status(500).send({message: "Products not found"});
     } catch (error) {
-        res.status(500).send({message: error.message});
+        return res.status(500).send({message: error.message});
     }
 });
 
@@ -59,15 +60,50 @@ app.get('/products/:id', async (req, res) => {
     try {
         const products = await product.findOne({_id: req.params.id}, {title: 1, _id: 0, price: 1});
         if(products)
-            res.send({
+            return res.send({
                 success: true,
                 message: "return single product",
                 data: products
             });
         else
-            res.status(500).send({message: "Products not found"});
+            return res.status(500).send({message: "Products not found"});
     } catch (error) {
-        res.status(500).send({message: error.message});
+        return res.status(500).send({message: error.message});
+    }
+});
+
+//Update
+app.put('/products/:id', async (req, res) => {
+    try {
+        const products = await product.findByIdAndUpdate({_id: req.params.id}, {$set: {price: 700}}, {new: true});
+        if(products)
+            return res.send({
+                success: true,
+                message: "updated single product",
+                data: products
+            });
+        else
+            return res.status(500).send({message: "Products not found"});
+    } catch (error) {
+        return res.status(500).send({message: error.message});
+    }
+});
+
+// Delete
+app.delete('/products/:id', async (req, res) => {
+    try {
+        const products = await product.findByIdAndDelete({_id: req.params.id});
+        console.log(products);
+        if(products)
+            return res.send({
+                success: true,
+                message: "deleted single product",
+                data: products
+            });
+        else
+            return res.status(500).send({message: "Products not found"});
+    } catch (error) {
+        return res.status(500).send({message: error.message});
     }
 });
 
